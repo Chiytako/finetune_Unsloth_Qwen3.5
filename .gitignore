@@ -1,0 +1,43 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs and Editor dirs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# ---------------------------------------------------
+# Project specific (Unsloth, model outputs, GGUF)
+# ---------------------------------------------------
+# Unsloth cache
+unsloth_compiled_cache/
+
+# Model checkpoints and outputs
+outputs_qwen35/
+gguf_*/
+
+# Large model files (if not already covered by directories)
+*.gguf
+*.bin
+*.pt
+*.safetensors
