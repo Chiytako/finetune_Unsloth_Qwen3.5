@@ -58,12 +58,16 @@ if __name__ == "__main__":
     # 1. Local high-quality SFT dataset (direct answers, messages format)
     sft_dataset = load_dataset(
         "json",
-        data_files={"train": r"E:\purograming\nikonikodetasets\highquality_dataset\sft.jsonl"},
+        data_files={"train": r"E:\purograming\nikonikodetasets\highquality_dataset\qwen35_27b_dataset.jsonl"},
         split="train",
     )
 
-    # 2. Reasoning dataset from HuggingFace (only 523 rows — loads quickly)
-    reasoning_raw = load_dataset("ChiTako/Qwen3.5-27b-ja", split="train")
+    # 2. Reasoning dataset from HuggingFace (private repo)
+    reasoning_raw = load_dataset(
+        "ChiTako/Qwen3.5-27b-ja",
+        split="train",
+        token=True,  # Use HF_TOKEN for private repo access
+    )
     reasoning_raw = reasoning_raw.filter(lambda x: x["quality"]["passed"])
 
     reasoning_dataset = reasoning_raw.map(
