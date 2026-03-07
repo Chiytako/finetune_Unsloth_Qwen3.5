@@ -1,0 +1,14 @@
+# Unsloth - Fine-tuning
+unsloth
+
+# Hugging Face
+transformers
+trl
+datasets
+huggingface_hub
+
+# PyTorch
+torch
+
+# PyArrow (Parquet conversion)
+pyarrow
