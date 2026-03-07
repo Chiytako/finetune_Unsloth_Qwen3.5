@@ -55,11 +55,11 @@ if __name__ == "__main__":
     )
 
     # ─── Dataset Loading ──────────────────────────────────────────────────────
-    # 1. Local high-quality SFT dataset (direct answers, messages format)
+    # 1. SFT dataset from HuggingFace (private repo)
     sft_dataset = load_dataset(
-        "json",
-        data_files={"train": r"E:\purograming\nikonikodetasets\highquality_dataset\qwen35_27b_dataset.jsonl"},
+        "ChiTako/niconico_sft",
         split="train",
+        token=True,  # Use HF_TOKEN for private repo access
     )
 
     # 2. Reasoning dataset from HuggingFace (private repo)
