@@ -5,6 +5,10 @@ from trl import SFTTrainer, SFTConfig
 
 max_seq_length = 16384
 
+# ─── Dataset size limits (None = use all) ────────────────────────────────────
+MAX_REASONING_SAMPLES = 5000   # ChiTako/Qwen3.5-27b-ja から最大何件使うか
+MAX_SFT_SAMPLES       = 10000  # ChiTako/niconico_sft  から最大何件使うか
+
 # ─── Format helpers (module-level so Windows spawn can import them) ───────────
 def format_reasoning_to_messages(example):
     """Convert ChiTako columns to chat messages, embedding thinking in <think> tags."""
@@ -57,20 +61,31 @@ if __name__ == "__main__":
     )
 
     # ─── Dataset Loading ──────────────────────────────────────────────────────
+    def make_split(n):
+        return "train" if n is None else f"train[:{n}]"
+
     # 1. SFT dataset from HuggingFace (private repo)
     sft_dataset = load_dataset(
         "ChiTako/niconico_sft",
-        split="train",
-        token=True,  # Use HF_TOKEN for private repo access
+        split=make_split(MAX_SFT_SAMPLES),
+        token=True,
     )
+    print(f"SFT dataset loaded: {len(sft_dataset)} examples")
 
     # 2. Reasoning dataset from HuggingFace (private repo)
+    # quality フィルタ後に件数が減るため、多めに読んでからフィルタする
+    reasoning_prefetch = (
+        MAX_REASONING_SAMPLES * 4 if MAX_REASONING_SAMPLES else None
+    )
     reasoning_raw = load_dataset(
         "ChiTako/Qwen3.5-27b-ja",
-        split="train",
-        token=True,  # Use HF_TOKEN for private repo access
+        split=make_split(reasoning_prefetch),
+        token=True,
     )
     reasoning_raw = reasoning_raw.filter(lambda x: x["quality"]["passed"])
+    if MAX_REASONING_SAMPLES and len(reasoning_raw) > MAX_REASONING_SAMPLES:
+        reasoning_raw = reasoning_raw.select(range(MAX_REASONING_SAMPLES))
+    print(f"Reasoning dataset loaded: {len(reasoning_raw)} examples")
 
     reasoning_dataset = reasoning_raw.map(
         format_reasoning_to_messages,
@@ -79,9 +94,6 @@ if __name__ == "__main__":
     )
 
     # ─── Convert SFT dataset to messages format ───────────────────────────────
-    print("SFT dataset columns:", sft_dataset.column_names)
-    print("SFT dataset example:", sft_dataset[0])
-
     def format_sft_to_messages(example):
         """Convert SFT dataset (role_N/content_N columns) to chat messages format."""
         messages = []
