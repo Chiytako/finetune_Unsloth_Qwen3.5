@@ -18,6 +18,8 @@ def format_reasoning_to_messages(example):
 
 
 def format_with_chat_template(example):
+    if not example.get("messages"):
+        return {"text": ""}
     text = tokenizer.apply_chat_template(
         example["messages"],
         tokenize=False,
@@ -76,9 +78,31 @@ if __name__ == "__main__":
         num_proc=None,  # None = single-threaded, avoids Windows spawn issues
     )
 
+    # ─── Convert SFT dataset to messages format ───────────────────────────────
+    print("SFT dataset columns:", sft_dataset.column_names)
+    print("SFT dataset example:", sft_dataset[0])
+
+    def format_sft_to_messages(example):
+        """Convert SFT dataset (role_N/content_N columns) to chat messages format."""
+        messages = []
+        i = 0
+        while f"role_{i}" in example and example[f"role_{i}"] is not None:
+            messages.append({"role": example[f"role_{i}"], "content": example[f"content_{i}"] or ""})
+            i += 1
+        if not messages:
+            return {"messages": None}
+        return {"messages": messages}
+
+    sft_dataset_formatted = sft_dataset.map(
+        format_sft_to_messages,
+        remove_columns=sft_dataset.column_names,
+        num_proc=None,
+    )
+    sft_dataset_formatted = sft_dataset_formatted.filter(lambda x: x["messages"] is not None)
+
     # ─── Blend: ≥75% reasoning, ≤25% direct SFT ──────────────────────────────
     blended_dataset = interleave_datasets(
-        [reasoning_dataset, sft_dataset],
+        [reasoning_dataset, sft_dataset_formatted],
         probabilities=[0.75, 0.25],
         seed=3407,
         stopping_strategy="first_exhausted",
