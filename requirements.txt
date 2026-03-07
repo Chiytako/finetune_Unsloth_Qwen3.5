@@ -1,5 +1,6 @@
 # Unsloth - Fine-tuning
 unsloth
+unsloth_zoo
 
 # Hugging Face
 transformers
