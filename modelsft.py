@@ -222,6 +222,11 @@ if __name__ == "__main__":
             sft_count = self.sft_stream_ds.max_samples or 0
             return sft_count + int(sft_count * self.reasoning_prob)
 
+        def __getitem__(self, idx):
+            # unsloth が train_dataset[0] でフォーマット確認するため実装
+            # reasoning_ds はメモリ上にあるので循環インデックスで返す
+            return self.reasoning_ds[idx % len(self.reasoning_ds)]
+
         def __iter__(self):
             import random
             rng = random.Random(self.seed)
