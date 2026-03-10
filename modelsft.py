@@ -6,7 +6,7 @@ import random
 from datasets import load_dataset, IterableDataset as HFIterableDataset
 from trl import SFTTrainer, SFTConfig
 
-max_seq_length = 16384
+max_seq_length = 4096  # 16384→4096: Attention はシーケンス長の2乗でスケールするため大幅に高速化
 
 # ─── SFT ストリーミング設定 ────────────────────────────────────────────────────
 CHUNK_SIZE      = 100   # バックグラウンドで一度に取得するサンプル数
@@ -204,6 +204,7 @@ if __name__ == "__main__":
             gradient_accumulation_steps=GRAD_ACC,
             warmup_steps=10,
             max_steps=max_steps,        # HFIterableDataset には max_steps を使用
+            packing=True,               # 短いサンプルをまとめて処理し GPU 効率を向上
             learning_rate=2e-4,
             lr_scheduler_type="cosine",
             logging_steps=10,
