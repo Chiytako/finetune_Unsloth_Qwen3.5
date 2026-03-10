@@ -217,6 +217,11 @@ if __name__ == "__main__":
             self.reasoning_prob = reasoning_prob
             self.seed = seed
 
+        def __len__(self):
+            # unsloth の初期化チェック用: SFT 件数 + reasoning 挿入分の期待値
+            sft_count = self.sft_stream_ds.max_samples or 0
+            return sft_count + int(sft_count * self.reasoning_prob)
+
         def __iter__(self):
             import random
             rng = random.Random(self.seed)
