@@ -188,6 +188,9 @@ if __name__ == "__main__":
             yield sft_item
 
     train_dataset = HFIterableDataset.from_generator(make_train_generator)
+    # unsloth が _ex_iterable.batch_size を期待するため MappedExamplesIterable に変換
+    # (batched=True でデフォルト batch_size=1000 が設定される。データは遅延処理のまま)
+    train_dataset = train_dataset.map(lambda x: x, batched=True)
 
     # ─── Training ─────────────────────────────────────────────────────────────
     trainer = SFTTrainer(
